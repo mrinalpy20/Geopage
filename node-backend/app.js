@@ -1,29 +1,39 @@
 const express = require("express");
-const bodyparser = require("body-parser");
-const placesRoutes = require("./routes/places-routes");
-const userRoutes = require("./routes/users-routes");
-const HttpError = require("./models/http-error");
-const app = express();
-const port = 5000;
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
-app.use(bodyparser.json());
+const placesRoutes = require("./routes/places-routes");
+const usersRoutes = require("./routes/users-routes");
+const HttpError = require("./models/http-error");
+
+const app = express();
+
+app.use(bodyParser.json());
 
 app.use("/api/places", placesRoutes);
+app.use("/api/users", usersRoutes);
 
-app.use("/api/users", userRoutes);
 app.use((req, res, next) => {
   const error = new HttpError("Could not find this route.", 404);
   throw error;
 });
+
 app.use((error, req, res, next) => {
   if (res.headerSent) {
     return next(error);
   }
-
   res.status(error.code || 500);
-  res.json({ message: error.message || "An unknown error occurred" });
+  res.json({ message: error.message || "An unknown error occurred!" });
 });
 
-app.listen(port, () => {
-  console.log("listening on port 5000");
-});
+mongoose
+  .connect(
+    "mongodb+srv://mrinalk1421:uGb1dpFDDbJerHKA@cluster3.lntnf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster3"
+  )
+  .then(() => {
+    console.log("Connected to Mongoose");
+    app.listen(5000);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
